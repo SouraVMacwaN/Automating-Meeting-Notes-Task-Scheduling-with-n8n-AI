@@ -1,0 +1,479 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            }
+          ]
+        },
+        "calendarId": {
+          "__rl": true,
+          "value": "your-email",
+          "mode": "list",
+          "cachedResultName": "your-email"
+        },
+        "triggerOn": "eventEnded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTrigger",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        -160
+      ],
+      "id": "97beef26-cd1b-4c8a-aa19-d0683c7beac6",
+      "name": "Google Calendar Trigger",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "vF31UdzSh8xloCYE",
+          "name": "Google Calendar account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 5,
+        "filters": {
+          "q": "subject:Notes from:gemini "
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -496,
+        -160
+      ],
+      "id": "dbaf0ff9-74f2-49de-b452-3a8c25f6b8c9",
+      "name": "Get many messages",
+      "webhookId": "4e4b411d-37c4-4141-814f-0dbac9ae5ee3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "wKvOkQZyLTjcncjv",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -272,
+        -160
+      ],
+      "id": "991388a3-a3bf-46a5-9980-abd631604314",
+      "name": "Get a message",
+      "webhookId": "bb30ce6e-906a-43c9-a645-691ff6b4c58b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "wKvOkQZyLTjcncjv",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "id"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.text }} {{ $json.headers.date }} if anything contains sourav in it or refered to me, output that as a bullet point task list for my calender also provide the timings for it, if no timing is provided add a timing for 24 hours after it has dated, keep it very simple if found do, Yes and then the task list, if nothing then a simple No"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -160
+      ],
+      "id": "f1f0e05c-0520-4639-9946-2c442cb3947a",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "0QofI1YpTtW7qBGp",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3cbe8d0a-2eb2-4988-a268-39f56822789f",
+              "leftValue": "={{ $json.aiText }}",
+              "rightValue": "Yes",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        528,
+        -160
+      ],
+      "id": "1356e6be-d379-4424-b351-0e5317367b0a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "tasks",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        976,
+        -256
+      ],
+      "id": "c2e52ab3-e9f6-42d0-9e93-a1e97dbf9941",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b5758969-9342-483c-9b92-35c780a0d02b",
+              "leftValue": "={{ $json.startTime }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1424,
+        -256
+      ],
+      "id": "dd96183a-66c4-41be-a2c9-1fa29b0dcb9a",
+      "name": "IF Has Time"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "your-email",
+          "mode": "list",
+          "cachedResultName": "your-email"
+        },
+        "start": "={{ $json.startTime$now }}",
+        "additionalFields": {
+          "summary": "={{ $json.summary }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1648,
+        -352
+      ],
+      "id": "23c8104e-7050-4c83-8b92-69196c3f3048",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "vF31UdzSh8xloCYE",
+          "name": "Google Calendar account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -64
+      ],
+      "id": "41bb3f9c-cb7f-4548-b808-329984b6e1d4",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "your-email",
+          "mode": "list",
+          "cachedResultName": "your-email"
+        },
+        "start": "={{ $now.plus(24, 'hour') }}",
+        "end": "={{ $now.plus(25, 'hour') }}",
+        "additionalFields": {
+          "summary": "={{ $json.summary }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        1648,
+        -160
+      ],
+      "id": "91b9c036-c4fa-4a04-bfc5-1cc85077b552",
+      "name": "Create an event1",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "vF31UdzSh8xloCYE",
+          "name": "Google Calendar account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "03d4854d-2508-4b01-8ae3-5e2074857535",
+              "name": "aiText",
+              "value": "={{ $json.content.parts[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        -160
+      ],
+      "id": "e261c50f-8761-477b-b0e3-91cd0e7fcade",
+      "name": "Ai Response"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e5c0939b-cb77-4562-8b7a-e142b87f4bf1",
+              "name": "tasks",
+              "value": "={{ $json.aiText.replace(\"Yes\\n\\n* \", \"\").split('\\n* ') }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        752,
+        -256
+      ],
+      "id": "51d0cd49-bae4-4e83-8331-ac429f6279c5",
+      "name": "Array"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5407c765-b68c-4bac-a301-85d668745d05",
+              "name": "summary",
+              "value": "={{ $json.tasks.replace(/\\s*\\(Timing:.*\\)$/, '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "103c084e-0692-42f4-adc6-42d307670238",
+              "name": "startTime",
+              "value": "={{ $json.tasks.match(/\\(Timing:\\s*(.*?)\\)/) ? $json.tasks.match(/\\(Timing:\\s*(.*?)\\)/)[1].trim() : null }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1200,
+        -256
+      ],
+      "id": "ac9a17f2-a8ba-4642-9115-66129de512ee",
+      "name": "Schedule"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Calendar Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Ai Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Array",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Schedule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Has Time": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create an event1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ai Response": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Array": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "IF Has Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fca9e085-f4dd-484f-b32f-3e498be88a63",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b06fd97be78b20f98ebebef89ea5597ebb6bc0474f2d313bda9888f5c2234063"
+  },
+  "id": "Dr9Zc7t2oM944IA8",
+  "tags": []
+}
