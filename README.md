@@ -16,7 +16,6 @@ This **n8n workflow** automates task management by fetching meeting notes from G
 * Supports multiple tasks per email
 * Fully automated workflow from email → AI → Calendar
 
-![AI Processing Example](./images/ai-processing-example.png)
 
 ---
 
@@ -61,7 +60,7 @@ This **n8n workflow** automates task management by fetching meeting notes from G
 4. Splits tasks and assigns timings (either specified or default 24 hours later).
 5. Schedules tasks in Google Calendar automatically.
 
-![Calendar Event Example](.calendar-task.png)
+![Calendar Event Example](./calendar_event.png)
 
 ---
 
