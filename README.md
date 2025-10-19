@@ -61,7 +61,7 @@ This **n8n workflow** automates task management by fetching meeting notes from G
 4. Splits tasks and assigns timings (either specified or default 24 hours later).
 5. Schedules tasks in Google Calendar automatically.
 
-![Calendar Event Example](./images/calendar-event-example.png)
+![Calendar Event Example](.calendar-task.png)
 
 ---
 
@@ -87,5 +87,3 @@ This **n8n workflow** automates task management by fetching meeting notes from G
 
 * **Workflow Diagram** – `n8n_automation.png`
 
-
-Do you want me to create that structure for you next?
